@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Летающий кот</title>
+<link rel="stylesheet" href="css/style.css?v=20261126_pkbsdk">
+
+</head>
+<body>
+<div id="orientationGate" class="orientation-gate" role="status" aria-hidden="true">
+  <div class="orientation-clouds" aria-hidden="true">
+    <img src="assets/art/loc/forest/cloud1.webp" alt="">
+    <img src="assets/art/loc/forest/cloud2.webp" alt="">
+    <img src="assets/art/loc/forest/cloud3.webp" alt="">
+    <img src="assets/art/loc/forest/cloud1.webp" alt="">
+    <img src="assets/art/loc/forest/cloud2.webp" alt="">
+  </div>
+  <strong class="orientation-title" data-i18n="title">Летающий кот</strong>
+  <div class="orientation-device" aria-hidden="true">
+    <svg class="orientation-phone" viewBox="0 0 160 160">
+      <g class="orientation-phone-body"><rect x="48" y="27" width="64" height="106" rx="12"/><path d="M70 39h20M76 120h8"/></g>
+      <path class="orientation-turn-arrow" d="M29 73a56 56 0 0 1 94-35m-2-17 4 20-20-1"/>
+    </svg>
+    <div class="orientation-window"><span></span><b>↔</b></div>
+  </div>
+  <p id="orientationMessage">Поверните устройство горизонтально</p>
+</div>
+<div id="app">
+  <div id="tutorialShade" class="tutorial-shade hidden"></div>
+  <section id="tutorial" class="tutorial hidden" aria-label="Tutorial">
+    <div class="tutorial-header" aria-live="polite">
+      <strong id="tutorialTitle"></strong><span id="tutorialStep"></span>
+      <div class="tutorial-progress"><i id="tutorialProgress"></i></div>
+      <p id="tutorialBody"></p>
+      <button id="tutorialSkip" type="button"></button>
+    </div>
+    <div class="tutorial-prompt"><img id="tutorialIcon" alt=""><span id="tutorialObjective"></span><b id="tutorialCounter"></b></div>
+  </section>
+  <div id="tutorialMarker" class="tutorial-marker hidden" aria-hidden="true"></div>
+  <!-- живой фон меню (локация Tank Stars) и игровой холст -->
+  <canvas id="menuBg"></canvas>
+  <canvas id="game"></canvas>
+
+  <!-- HUD уровня -->
+  <div id="hud" class="hidden">
+    <button id="btnHome" class="hud-btn" aria-label="Меню">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5 L8 12 L14.5 19"/></svg>
+    </button>
+    <div class="hud-progress">
+      <div class="lvl-badge"><span id="hudLevelNum" class="ts-text">1</span></div>
+      <div class="progress"><div id="hudProgressFill" class="progress-fill"></div><span id="hudProgressText" class="ts-text">0%</span></div>
+    </div>
+    <div class="coins-pill"><img src="assets/art/obj/coin.webp" alt=""><span id="hudCoins" class="ts-text">0</span></div>
+  </div>
+  <div id="tapHint" class="tap-hint hidden"><img class="tap-hand" src="assets/art/ui/hand.webp" alt=""><span data-i18n="tapHint" class="ts-text">Удерживай, чтобы лететь</span></div>
+
+  <!-- Главное меню -->
+  <div id="menu" class="screen">
+    <div class="menu-top">
+      <div class="menu-top-left">
+        <button id="btnSettings" class="icon-only" aria-label="Настройки"><img src="assets/art/ui/icon_settings.webp" alt=""></button>
+      </div>
+      <div class="menu-top-right">
+        <div class="coins-pill big"><img src="assets/art/obj/coin.webp" alt=""><span class="coins-value ts-text">0</span>
+        </div>
+        <button id="btnDaily" class="daily-btn" aria-label="Подарок">
+          <img src="assets/art/ui/icon_gift.webp" alt="">
+          <span class="daily-col"><span class="daily-amt ts-text"><img src="assets/art/ui/icon_ad.webp" alt="" class="ad-mark">+25</span><span class="daily-timer ts-text"></span></span>
+        </button>
+      </div>
+    </div>
+    <div class="menu-center"><img class="menu-logo logo-img" src="assets/art/ui/logo_ru.webp" alt="Летающий кот"></div>
+    <div class="menu-bottom">
+      <button id="btnShop" class="side-btn" aria-label="Магазин">
+        <img src="assets/art/ui/icon_shop.webp" alt=""><span class="ts-text" data-i18n="shop">Магазин</span>
+      </button>
+      <div class="menu-buttons">
+        <button id="btnPlay" class="btn yellow big"><i class="play-tri"></i><span class="ts-text" data-i18n="play">Играть</span></button>
+        <button id="btnLevels" class="btn violet"><span class="ts-text" data-i18n="levels">Уровни</span> <small id="menuProgress" class="ts-text">0%</small></button>
+      </div>
+      <button class="side-btn" data-reward-coins aria-label="+10">
+        <img src="assets/art/ui/icon_gift.webp" alt=""><span class="ts-text"><img src="assets/art/ui/icon_ad.webp" alt="" class="inline-ico">+10</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Панели поверх меню -->
+  <div id="overlay" class="overlay hidden"></div>
+
+  <div id="levelsPanel" class="panel wide hidden">
+    <div class="panel-head"><span class="ts-text" data-i18n="levels">Уровни</span><button class="close-btn" aria-label="Закрыть"><img src="assets/art/ui/icon_close.webp" alt=""></button></div>
+    <div class="panel-scroll">
+    <div id="categoryList" class="category-list"></div>
+    <div id="levelGrid" class="level-grid hidden"></div>
+    <div id="questRow" class="quest-row"></div>
+    <button id="endlessBtn" class="endless-btn"><span class="inf"><span class="ts-text">∞</span></span><span class="endless-text"><span class="ts-text" data-i18n="endless">Бесконечный режим</span><small id="endlessBest" class="ts-text"></small></span><span class="endless-go"><i class="play-tri"></i></span></button>
+    <div class="levels-note"><span class="ts-text" data-i18n="cartoonHint">Пройди все уровни и посмотри мультфильм</span></div>
+    </div>
+  </div>
+
+  <div id="shopPanel" class="panel wide hidden">
+    <div class="panel-head"><span class="ts-text" data-i18n="shop">Магазин</span><button class="close-btn" aria-label="Закрыть"><img src="assets/art/ui/icon_close.webp" alt=""></button></div>
+    <div class="shop-top">
+      <div class="coins-pill"><img src="assets/art/obj/coin.webp" alt=""><span class="coins-value ts-text">0</span></div>
+    </div>
+    <div id="skinList" class="skin-list"></div>
+  </div>
+
+  <div id="settingsPanel" class="panel hidden">
+    <div class="panel-head"><span class="ts-text" data-i18n="settings">Настройки</span><button class="close-btn" aria-label="Закрыть"><img src="assets/art/ui/icon_close.webp" alt=""></button></div>
+    <div class="settings-body">
+      <label class="toggle-row"><img id="soundIco" src="assets/art/ui/icon_sound_on.webp" alt="" class="row-ico"><span class="ts-text" data-i18n="sounds">Звуки</span><input type="checkbox" id="tglSounds"><i></i></label>
+      <label class="toggle-row"><img id="musicIco" src="assets/art/ui/icon_sound_on.webp" alt="" class="row-ico"><span class="ts-text" data-i18n="music">Музыка</span><input type="checkbox" id="tglMusic"><i></i></label>
+      <div class="vol-row">
+        <span class="ts-text" data-i18n="volume">Громкость</span>
+        <input type="range" id="volRange" min="0" max="100" step="1" value="100" aria-label="Громкость">
+        <span id="volVal" class="ts-text">100</span>
+      </div>
+      <div class="lang-title ts-text" data-i18n="language">Язык</div>
+      <div id="langList" class="lang-list"></div>
+      <button id="btnResetProgress" class="btn violet" type="button"><span class="ts-text" data-i18n="resetProgress">Reset progress</span></button>
+      <div id="resetProgressConfirm" class="reset-progress-confirm hidden">
+        <p data-i18n="resetProgressWarning">Coins, levels and skins will be reset. Sound and language settings will be kept.</p>
+        <button id="btnConfirmReset" class="btn pink" type="button"><span class="ts-text" data-i18n="resetProgress">Reset progress</span></button>
+        <button id="btnCancelReset" class="btn violet" type="button"><span class="ts-text" data-i18n="cancelReset">Cancel</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Экран результата -->
+  <div id="result" class="result hidden">
+    <div class="result-rays"></div>
+    <div class="result-card">
+      <div class="result-plate">
+        <img id="resultPlate" class="plate-img" src="assets/art/ui/plate_win.webp" alt="">
+        <div id="resultTitle" class="result-title ts-text">Победа</div>
+      </div>
+      <div id="resultText" class="result-text ts-text"></div>
+      <div id="resultButtons" class="result-buttons"></div>
+    </div>
+    <!-- подарочный временный скин за рекламу: парящий кружок справа от окна победы -->
+    <button id="skinGift" class="skin-gift hidden">
+      <span class="gift-orb"><canvas id="giftCanvas" width="220" height="220"></canvas><img class="gift-ad" src="assets/art/ui/icon_ad.webp" alt=""><i class="gift-ok">✓</i></span>
+      <span id="giftText" class="gift-text ts-text"></span>
+    </button>
+  </div>
+
+  <!-- Загрузка рекламы / тосты -->
+  <div id="adWait" class="ad-wait hidden"><div class="spinner"></div><span data-i18n="adLoading" class="ts-text">Загрузка рекламы…</span></div>
+  <div id="toast" class="toast ts-text hidden"></div>
+
+  <!-- игра потеряла фокус (окно площадки поверх игры): касание продолжает -->
+  <div id="pauseHint" class="pause-hint hidden" aria-hidden="true"><i></i></div>
+  <!-- прогресс изменён на другом устройстве или в другой вкладке -->
+  <div id="reloadPrompt" class="reload-prompt hidden" role="alertdialog" aria-labelledby="reloadText">
+    <div class="reload-card">
+      <p id="reloadText" data-i18n="reloadText">Прогресс изменился на другом устройстве или в другой вкладке. Перезагрузи игру, чтобы продолжить.</p>
+      <button id="btnReload" class="btn green" type="button"><span class="ts-text" data-i18n="reloadBtn">Перезагрузить</span></button>
+    </div>
+  </div>
+
+  <div id="loading" class="loading">
+    <img class="loading-logo logo-img" src="assets/art/ui/logo_ru.webp" alt="Летающий кот">
+    <div class="spinner"></div>
+    <div id="loadingText" class="ts-text">0%</div>
+  </div>
+</div>
+
+<script src="js/data.js?v=20261126_pkbsdk"></script>
+<script src="js/levels.js?v=20261126_pkbsdk"></script>
+<script src="js/levels_progression.js?v=20261126_pkbsdk"></script>
+<script src="js/levels_build.js?v=20261126_pkbsdk"></script>
+<script src="js/art.js?v=20261126_pkbsdk"></script>
+<script src="js/i18n.js?v=20261126_pkbsdk"></script>
+<script src="js/platform.js?v=20261126_pkbsdk"></script>
+<script src="js/save.js?v=20261126_pkbsdk"></script>
+<script src="js/audio.js?v=20261126_pkbsdk"></script>
+<script src="js/engine.js?v=20261126_pkbsdk"></script>
+<script src="js/locations.js?v=20261126_pkbsdk"></script>
+<script src="js/game.js?v=20261126_pkbsdk"></script>
+<script src="js/toon.js?v=20261126_pkbsdk"></script>
+<script src="js/ui.js?v=20261126_pkbsdk"></script>
+<script src="js/dev.js?v=20261126_pkbsdk"></script>
+<script src="js/onboarding.js?v=20261126_pkbsdk"></script>
+<script src="js/main.js?v=20261126_pkbsdk"></script>
+</body>
+</html>
+
+
