@@ -57,7 +57,10 @@
     loadingReady() {
       if (this._loaded) return;
       this._loaded = true;
-      try { if (this.sdk) this.sdk.gameStarted(); } catch (error) { log(error); }
+      if (!this.sdk) return;
+      try { this.sdk.gameStarted(); } catch (error) { log(error); }
+      // До gameStarted() rewarded недоступна, и готовность приходит не сразу — не ждём общего опроса.
+      for (const delay of [0, 500, 1500, 4000, 9000]) setTimeout(() => this.refreshAds(), delay);
     },
     onPause(fn) { this.pauseHandlers.push(fn); },
     onResume(fn) { this.resumeHandlers.push(fn); },
